@@ -1,0 +1,9 @@
+HashMap<Integer,Turno> Turnos
+
+Turnos = [1: [Player1: SKIP,   Player2: GET_CARD],
+          2: [Player1: ATTACK, Player2: GET_CARD],
+          3: [Player1: _____,  Player2: GET_CARD],
+          4: [Player1: ... ]
+        ]
+
+

@@ -1,0 +1,30 @@
+Normas:
+	-2 jugadores , 1 fisico y otro la IA
+	-1 solo tipo de gatos
+	-Siendo N el numero de jugadores hay N-1 bombas
+	-Numero de cartas a repartir
+	-Se reparten 5 cartas al principio de la partida, bomba no incluida.
+	 Se reparte 1 vida por jugador al principio. Las 4 cartas son aleatorias
+	 sin posibilidad de ser la bomba. 
+	-Se especifica la probabilidad de bomba en cada turno.
+	-Sin tiempo limite por turno.
+	-El turno se acaba de las siguientes formas:
+		-Cuando se coge una carta
+		-Cuando se usa una carta de efecto que implique pasar el turno: Attack o Skip.
+	-Gatos:
+		- 3 gatos: robas una carta al rival.
+		- 5 gatos: se comprueba en el mazo de cartas usadas si hay una vida y si la hay te la quedas.
+	-Se pierde la partida cuando explota una bomba y no puedes desactivarla.
+	
+Cartas para 2 jugadores:
+	-Explodding Kitten  x1
+	-Defuse x3
+	-Attack x3
+	-See the future x3
+	-Shuffle x3
+	-Skip x3
+	-Favor x3
+	-Cat (no implementado)
+	-Nope (no la implementamos) 
+
+	
