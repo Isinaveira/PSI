@@ -5,7 +5,7 @@ public class Card {
     private String img; // ruta a la imagen
     private Estado estado;
     private int id;
-    static public int id_index=0;
+    static public int id_index=1;
 
     public enum Estado {
         REPARTIDA, USADA, LIBRE // REPARTIDA: la tiene un jugador en la mano
@@ -13,12 +13,12 @@ public class Card {
                                 // LIBRE: está en el mazo para coger
     };
 
-    public Card(String type, String path) {
+    public Card(String type) {
         this.id = id_index;
         id_index ++;
         this.type = type;
-        this.img = path;
         this.estado = Estado.LIBRE;
+        System.out.println(this.id + this.type);
     }
 
     public int getId() {

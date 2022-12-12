@@ -1,19 +1,20 @@
 package classes;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Main{
 
     public static void main(String[] args) {
         
-        HashMap<String, String> imagesPath = new HashMap<String, String>();
-        imagesPath.put("EXPLODING KITTEN", "../images/explodin_kitten.jpg");
-        imagesPath.put("DEFUSE", "../images/defuse.jpg");
-        imagesPath.put("SKIP", "../images/skip.jpg");
-        imagesPath.put("ATTACK", "../images/attack.jpg");
-        imagesPath.put("FAVOR", "../images/favor.jpg");
-
-        Partida p = new Partida( 2, 3, 3, imagesPath);
-
+        ArrayList<String> Card_types = new ArrayList<String>();
+        Card_types.add("EXPLODING_KITTEN");
+        Card_types.add("DEFUSE");
+        Card_types.add("SKIP");
+        Card_types.add("ATTACK");
+        Card_types.add("FAVOR");
+        int id = 0;
+        Partida p = new Partida( 2, 3, 3, Card_types ,id);
+        p.juegaPartida();
+        //p.resultados();
     }
 
 

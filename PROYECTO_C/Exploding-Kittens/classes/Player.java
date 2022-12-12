@@ -1,25 +1,21 @@
 package classes;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+
 
 import classes.Card.Estado;
 
 public class Player {
 
     private int id;
-    private String name;
+    
     private HashMap<Integer, Card> hand = new HashMap<Integer,Card>();
 
     public Player(int id) {
-        String name = "";
-        System.out.println("Introduce un nombre de usuario: ");
-        Scanner sc = new Scanner(System.in);
-        name = sc.nextLine();
-        sc.close();
 
         this.id = id;
-        this.name = name;
+        
     }
 
     // GETTERS & SETTERS
@@ -32,13 +28,7 @@ public class Player {
         this.id = id;
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    
 
     public HashMap<Integer,Card> getHand() {
         return this.hand;
@@ -53,17 +43,32 @@ public class Player {
     // coge carta sabiendo cuál es la escogida
     public void cogeCarta(Partida p, int card_num){
         Card carta = p.getHashCards().get(card_num);
-        p.getDeck().remove(carta);
+        ArrayList<Card> deck = p.getDeck();
+        deck.remove(carta);
+        p.setDeck(deck);
         this.getHand().put(card_num, carta);
         carta.setEstado(Estado.REPARTIDA);
     }
     
     // coge una carta aleatoria (la primera del mazo)
-    public void cogeCarta(Partida p){
-        Card carta = p.getDeck().get(0);
-        p.getDeck().remove(carta);
-        this.getHand().put(carta.getId(),carta);
-        carta.setEstado(Estado.REPARTIDA);
+    public int cogeCarta(Partida p){
+        ArrayList<Card> deck = p.getDeck();
+        if(deck.isEmpty()){
+            System.out.println(p.getDeck());
+            Card carta = deck.get(0);
+            
+            if(carta.getType().equals("EXPLODING_KITTEN")){
+                return carta.getId();
+            }
+            this.getHand().put(carta.getId(),carta);
+            carta.setEstado(Estado.REPARTIDA);
+            deck.remove(carta);
+            p.setDeck(deck);
+            return carta.getId();
+
+        }else{
+            return -1;
+        }
     }
     
     public String manoString(){
@@ -72,5 +77,14 @@ public class Player {
             mano += Integer.toString(carta.getKey())+": "+carta.getValue().getType() + "\n"; 
         }
         return mano;
+    }
+    public String manoString_sinId(){
+        
+        String mano = ""; 
+        for (Map.Entry<Integer, Card> carta : hand.entrySet()) {
+            mano += carta.getValue().getType() + ","; 
+        }
+        return mano;
+        
     }
 }
