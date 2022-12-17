@@ -1,5 +1,6 @@
 package estados;
 import java.util.HashMap;
+import java.util.Map;
 
 public class States {
     
@@ -7,7 +8,7 @@ public class States {
     private HashMap<String,Integer> hand = new HashMap<String,Integer>();
     private HashMap<String,Float> actions = new HashMap<String, Float>();
     private String[] cards = {"Defuse", "Favor", "Attack", "Skip"};
-    private String[] action_types = {"Favor", "Attack", "Skip", "Draw"};
+    private String[] action_types = {"","Favor", "Attack", "Skip", "Draw"};
     private int deck; 
 
 
@@ -53,7 +54,25 @@ public class States {
         return key;
     }
 
+    public static String stateString(String key, States state){
+        String state_String = key+ ":\n \tHand:\n";
 
+        for(Map.Entry<String, Integer> card : state.getHand().entrySet()){
+            state_String += "\t\t" + card.getKey() + ":" + card.getValue() + "\n";
+        }
+        state_String += "\tDeck:\n"+"\t\t"+Integer.toString(state.deck)+"\n";
+        state_String += "\tUsed:\n";
+        for(Map.Entry<String, Integer> used_card : state.getUsed().entrySet()){
+            state_String += "\t\t" + used_card.getKey() + ":" + used_card.getValue() + "\n";
+        }
+        state_String += "\tActions:\n";
+        for(Map.Entry<String, Float> action : state.getActions().entrySet()){
+            state_String += "\t\t" + action.getKey() + ":" + action.getValue() + "\n";
+        }
+
+        
+        return state_String;
+    }
     public HashMap<String,Integer> getUsed() {
         return this.used;
     }

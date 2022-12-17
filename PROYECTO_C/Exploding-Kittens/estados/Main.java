@@ -1,6 +1,13 @@
 package estados;
 
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.Map;
+
+
 
 class Main{
 
@@ -41,9 +48,24 @@ class Main{
                 }
             }
         }
-        System.out.println(states.size());
+       exportaEstados();
     }
 
+    public static void exportaEstados(){
+        BufferedWriter bw = null;
+        String texto = "";
+        try {
+            File fichero = new File("estados.txt");
+            bw = new BufferedWriter(new FileWriter(fichero)); 
+            for(Map.Entry<String,States> state: states.entrySet()){
+                texto = States.stateString(state.getKey(), state.getValue());
+                bw.write(texto);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        
+    }
 
     public static boolean compruebaEstado(Integer[] hand, Integer[] used, int deck){
         boolean validity = true;
