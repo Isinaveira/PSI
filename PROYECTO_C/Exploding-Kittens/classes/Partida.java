@@ -85,10 +85,6 @@ public class Partida {
         Boolean attack = false; 
         this.deck.add(this.exploding);
         baraja_bomba();
-        
-
-
-         
          
         while (!exploding) { // mientras no se muera se juega una partida
             Player player = hashPlayers.get(player_id);
