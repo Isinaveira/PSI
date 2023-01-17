@@ -21,11 +21,12 @@ public class Partida {
     private int number_of_turns;
     private int id;
     private Card exploding;
+    public LearningTools LT = new LearningTools();
     // num_cards: es el numero de cartas por tipo (no incluye exploding kittens y
     // defuse)
     // num_hand_cards: el numero de cartas a repartir en el primer turno
     // card_types: tipos de cartas usadas en la partida
-    public Partida(int num_players, int num_cards, int num_hand_cards, ArrayList<String> card_types, int id) {
+    public Partida(int num_players, int num_cards, int num_hand_cards, ArrayList<String> card_types, int id, boolean onlyIA) {
         int num_exploding = num_players - 1;
         int num_defuse = num_players + 1;
         this.num_hand_cards = num_hand_cards;
@@ -65,15 +66,16 @@ public class Partida {
         for(Map.Entry<Integer,Card> card: this.hashCards.entrySet()){
             this.deck.add(card.getValue());
         }
+    
         for (int i = 0; i < num_players; i++) {
-            Player j = new Player(i);
+            Player j = new Player(i, onlyIA);
             hashPlayers.put(i, j);
         }
 
         
         
     }
-
+ 
     // FUNCTIONS
     public void juegaPartida() {
         reparteCartas();
@@ -81,7 +83,7 @@ public class Partida {
         boolean exploding = false;
         int num_turns_jugador = 1; // numero de turnos que tiene que jugar un jugador
         int player_id = 0;
-        ArrayList<Jugada> jugadas  = new ArrayList<>();
+        ArrayList<Jugada> jugadas = new ArrayList<>();
         Boolean attack = false; 
         this.deck.add(this.exploding);
         baraja_bomba();
@@ -132,83 +134,161 @@ public class Partida {
         System.out.println("Probabilidad de bomba " + 1/this.getDeck().size());
         Scanner leer=new Scanner(System.in);
         while(!end_turn){
-            System.out.println("Escoge una carta o escribe 'R' para robar una carta ");
-            System.out.println("Cartas en mano: \n" + p.manoString());
-            System.out.println("R) Robar");
-            opcion = leer.nextLine();
-            // comprobar que tenga la carta que dice tener en la mano o que va a robar    
             Jugada j;
-            if(Utilities.isNumeric(opcion)){ // se juega una carta
-                if(p.getHand().containsKey(Integer.parseInt(opcion))){
-                    Card c = p.getHand().get(Integer.parseInt(opcion));
-                    String accion = c.getType();
-                    
-                    switch(accion){
-                        case "ATTACK":
-                            j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
-                            jugadas.add(j);
-                            this.usar_carta(p, c);
-                            end_turn = true;
-                            break;
-
-        
-                        case "SKIP":
-                            j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
-                            jugadas.add(j);
-                            this.usar_carta(p, c);
-                            end_turn = true;
-                            break;
-        
-                        case "FAVOR":
-                            j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
-                            jugadas.add(j);
-                            this.usar_carta(p, c);
-                            giveMeFavor(p.getId());
-                            break;
-                        default:
-                            System.out.println("NO PUEDES USAR EL DEFUSE HASTA QUE NO EXPLOTES");
-                    }
-                }
-            }else if(opcion.equalsIgnoreCase("R")){ // se coge una carta
-                j = new Jugada(p.getId(), "GET_CARD", this.getDeck().size(), this.getUsed_cards());
-                jugadas.add(j);
-                Card c = this.deck.get(0);
-                if(!c.getType().equalsIgnoreCase("EXPLODING_KITTEN")){
-                    this.deck.remove(0);
-                    this.deck.removeAll(Collections.singleton(null));
-                    p.getHand().put(c.getId(),c);
-                }else{
-                    //HA SALIDO UNA BOMBA
-                        System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
-                        Card defuse = null;
-                        Boolean used_defuse = false;
-                        Boolean muerte = true;
-                        HashMap<Integer,Card> hand = p.getHand();
+            if(p.isHuman()){
+                System.out.println("Escoge una carta o escribe 'R' para robar una carta ");
+                System.out.println("Cartas en mano: \n" + p.manoString());
+                System.out.println("R) Robar");
+                opcion = leer.nextLine();
+                // comprobar que tenga la carta que dice tener en la mano o que va a robar    
+                if(Utilities.isNumeric(opcion)){ // se juega una carta
+                    if(p.getHand().containsKey(Integer.parseInt(opcion))){
+                        Card c = p.getHand().get(Integer.parseInt(opcion));
+                        String accion = c.getType();
+                        
+                        switch(accion){
+                            case "ATTACK":
+                                j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
+                                jugadas.add(j);
+                                this.usar_carta(p, c);
+                                end_turn = true;
+                                break;
     
-                        for(Map.Entry<Integer,Card> card : hand.entrySet()){ 
-                            //busco un Defuse
-                            if(card.getValue().getType().equalsIgnoreCase("DEFUSE") && !used_defuse){ 
-                                defuse = card.getValue();
-                                this.baraja_bomba();
-                                muerte = false;
-                                Jugada d = new Jugada(p.getId(), "DEFUSE", this.getDeck().size(), this.getUsed_cards());
-                                jugadas.add(d);
-                                used_defuse = true;
+            
+                            case "SKIP":
+                                j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
+                                jugadas.add(j);
+                                this.usar_carta(p, c);
+                                end_turn = true;
+                                break;
+            
+                            case "FAVOR":
+                                j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
+                                jugadas.add(j);
+                                this.usar_carta(p, c);
+                                giveMeFavor(p.getId());
+                                break;
+                            default:
+                                System.out.println("NO PUEDES USAR EL DEFUSE HASTA QUE NO EXPLOTES");
+                        }
+                    }
+                }else if(opcion.equalsIgnoreCase("R")){ // se coge una carta
+                    j = new Jugada(p.getId(), "GET_CARD", this.getDeck().size(), this.getUsed_cards());
+                    jugadas.add(j);
+                    Card c = this.deck.get(0);
+                    if(!c.getType().equalsIgnoreCase("EXPLODING_KITTEN")){
+                        this.deck.remove(0);
+                        this.deck.removeAll(Collections.singleton(null)); //borra los null 
+                        p.getHand().put(c.getId(),c);
+                    }else{
+                        //HA SALIDO UNA BOMBA
+                            System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
+                            Card defuse = null;
+                            Boolean used_defuse = false;
+                            Boolean muerte = true;
+                            HashMap<Integer,Card> hand = p.getHand();
+        
+                            for(Map.Entry<Integer,Card> card : hand.entrySet()){ 
+                                //busco un Defuse
+                                if(card.getValue().getType().equalsIgnoreCase("DEFUSE") && !used_defuse){ 
+                                    defuse = card.getValue();
+                                    this.baraja_bomba();
+                                    muerte = false;
+                                    Jugada d = new Jugada(p.getId(), "DEFUSE", this.getDeck().size(), this.getUsed_cards());
+                                    jugadas.add(d);
+                                    used_defuse = true;
+                                }
                             }
-                        }
-                        if(used_defuse){
-                            this.usar_carta(p, defuse);
-                        }
-                        if(muerte){
-                            Jugada m = new Jugada(p.getId(), "MUERTE");
-                            jugadas.add(m);
-                        }
-                    
+                            if(used_defuse){
+                                this.usar_carta(p, defuse);
+                            }
+                            if(muerte){
+                                Jugada m = new Jugada(p.getId(), "MUERTE");
+                                jugadas.add(m);
+                            }
+                        
+                    }
+                    end_turn = true;
+                        
+                }else{
+                    System.out.println("ESCOGE UNA OPCION VALIDA");
                 }
-                end_turn = true;
-                    
+
             }else{
-                System.out.println("ESCOGE UNA OPCION VALIDA");
+                //SUPUESTA "INTELIGENCIA" 
+                String state = LT.getActualState(p.getHand(), deck.size(), used_cards);
+                int accion = LT.getNewActionQLearning(state);
+                
+                switch(accion){
+                    case 0:
+                        //ROBAR
+                        j = new Jugada(p.getId(), "GET_CARD", this.getDeck().size(), this.getUsed_cards());
+                        jugadas.add(j);
+                        Card c = this.deck.get(0);
+                        if(!c.getType().equalsIgnoreCase("EXPLODING_KITTEN")){
+                            this.deck.remove(0);
+                            this.deck.removeAll(Collections.singleton(null)); //borra los null 
+                            p.getHand().put(c.getId(),c);
+                        }else{
+                        //HA SALIDO UNA BOMBA
+                            System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
+                            Card defuse = null;
+                            Boolean used_defuse = false;
+                            Boolean muerte = true;
+                            HashMap<Integer,Card> hand = p.getHand();
+        
+                            for(Map.Entry<Integer,Card> card : hand.entrySet()){ 
+                                //busco un Defuse
+                                if(card.getValue().getType().equalsIgnoreCase("DEFUSE") && !used_defuse){ 
+                                    defuse = card.getValue();
+                                    this.baraja_bomba();
+                                    muerte = false;
+                                    Jugada d = new Jugada(p.getId(), "DEFUSE", this.getDeck().size(), this.getUsed_cards());
+                                    jugadas.add(d);
+                                    used_defuse = true;
+                                }
+                            }
+                            if(used_defuse){
+                                this.usar_carta(p, defuse);
+                            }
+                            if(muerte){
+                                Jugada m = new Jugada(p.getId(), "MUERTE");
+                                jugadas.add(m);
+                            }
+                        
+                        }
+                        end_turn = true;
+                        break;
+                        
+                    case 1:
+                        //FAVOR
+                        j = new Jugada(p.getId(), "FAVOR", this.getDeck().size(), this.getUsed_cards());
+                        jugadas.add(j);
+                        p.countTypes(hashCards);
+                        Card favor = p.getCard_types().get("FAVOR").get(0);
+                        this.usar_carta(p, favor);
+                        giveMeFavor(p.getId());
+                        break;
+                    case 2:
+                        //SKIP
+                        j = new Jugada(p.getId(), "SKIP", this.getDeck().size(), this.getUsed_cards());
+                        jugadas.add(j);
+                        p.countTypes(hashCards);
+                        Card skip = p.getCard_types().get("SKIP").get(0);
+                        this.usar_carta(p, skip);
+                        end_turn = true;
+                        break;
+
+                    case 3:
+                        j = new Jugada(p.getId(), "ATTACK", this.getDeck().size(), this.getUsed_cards());
+                        jugadas.add(j);
+                        p.countTypes(hashCards);
+                        Card attack = p.getCard_types().get("ATTACK").get(0);
+                        this.usar_carta(p, attack);
+                        end_turn = true;                        
+                        break;
+                }
+                
             }
             
         }
