@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.io.Serializable;
 
 
-class LearningTools {
+class LearningTools  implements Serializable{
 
   final double DecFactorLR = 0.99; // Value that will decrement the learning rate in each generation
   double epsilon = 0.6; // Used to avoid selecting always the best action

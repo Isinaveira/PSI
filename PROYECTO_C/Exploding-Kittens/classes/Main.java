@@ -1,12 +1,14 @@
 package classes;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
 public class Main{
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         LearningTools LT1 = new LearningTools();
         LearningTools LT2 = new LearningTools();
+        Utilities Ut = new Utilities();
         ArrayList<String> Card_types = new ArrayList<String>();
         Card_types.add("EXPLODING_KITTEN");
         Card_types.add("DEFUSE");
@@ -15,7 +17,15 @@ public class Main{
         Card_types.add("FAVOR");
         int contador_0 = 0;
         int contador_1 = 0;
-        for(int i = 0; i<100000; i++){
+        boolean hayDatos = true;
+        try{
+            Ut.importData("data0.dat");
+
+        }catch(Exception e){
+            hayDatos = false;
+        }
+
+        for(int i = 0; i<10000000; i++){
             System.out.println(i);
             Partida p = new Partida( 2, 3, 3, Card_types , true);
             if(i!=0){
@@ -40,6 +50,8 @@ public class Main{
         System.out.println(LT1.hash_StateActions.size());
         System.out.println(LT2.hash_StateActions.size());
         System.out.println("Partidas ganadas por el jugador 1: "+ contador_1);
+
+        Ut.exportData(LT1.hash_StateActions, "./data/data0.dat");
 
         //p.resultados();
     }
