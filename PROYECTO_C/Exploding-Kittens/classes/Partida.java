@@ -2,8 +2,6 @@ package classes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -19,19 +17,35 @@ public class Partida {
     private int winner;
     private int num_hand_cards;
     private int number_of_turns;
-    private int id;
     private Card exploding;
-    public LearningTools LT = new LearningTools();
+    
     // num_cards: es el numero de cartas por tipo (no incluye exploding kittens y
     // defuse)
     // num_hand_cards: el numero de cartas a repartir en el primer turno
     // card_types: tipos de cartas usadas en la partida
-    public Partida(int num_players, int num_cards, int num_hand_cards, ArrayList<String> card_types, int id, boolean onlyIA) {
+    public Partida(int num_players, int num_cards, int num_hand_cards, ArrayList<String> card_types, boolean onlyIA) {
+        if(!this.hashCards.isEmpty()){
+            this.hashCards.clear();
+        }
+        if(!this.hashPlayers.isEmpty()){
+            this.hashPlayers.clear();
+        }
+        if(!this.deck.isEmpty()){
+            this.deck.clear();
+        }
+        if(!this.turnos.isEmpty()){
+            this.turnos.clear();
+        }
+        if(this.exploding != null){
+            this.exploding = null;
+        }
+        if(Card.getId_index()!=1){
+            Card.setId_index(1);
+        }
         int num_exploding = num_players - 1;
         int num_defuse = num_players + 1;
         this.num_hand_cards = num_hand_cards;
         this.number_of_turns = 1; 
-        this.id = id;
 
         // Genera las cartas
         for (String type : card_types) {
@@ -62,7 +76,7 @@ public class Partida {
         this.used_cards.put("FAVOR", 0);
         
         //Metemos las cartas en el deck (mazo)
-        System.out.println("Tamaño hashCards: "+hashCards.size());
+        ////System.out.println("Tamaño hashCards: "+hashCards.size());
         for(Map.Entry<Integer,Card> card: this.hashCards.entrySet()){
             this.deck.add(card.getValue());
         }
@@ -92,11 +106,11 @@ public class Partida {
             Player player = hashPlayers.get(player_id);
             num_turns_jugador = this.getNumber_of_turns();
             while( num_turns_jugador > 0){
-                System.out.println("--------------------------------------------------------------");
-                System.out.println("Turno general: "+turn_number);
-                System.out.println("Numero de turnos del jugador: "+num_turns_jugador);
+                //System.out.println("--------------------------------------------------------------");
+                //System.out.println("Turno general: "+turn_number);
+                //System.out.println("Numero de turnos del jugador: "+num_turns_jugador);
                 jugadas = turno(player);
-                System.out.println("EL JUGADOR "+player_id+" HA JUGADO: "+jugadas.get(jugadas.size()-1).getJugada());
+                //System.out.println("EL JUGADOR "+player_id+" HA JUGADO: "+jugadas.get(jugadas.size()-1).getJugada());
                 turnos.put(turn_number,jugadas);
                 Jugada ultima = jugadas.get(jugadas.size()-1);
                 if (ultima.getJugada().equalsIgnoreCase("MUERTE")){
@@ -110,13 +124,15 @@ public class Partida {
                 turn_number ++;
                 num_turns_jugador --;
             }
-            if(num_turns_jugador <= 0 && !attack){
-                player_id = (player_id == 0)? 1 : 0;
-                this.setNumber_of_turns(1);
-            }else if(num_turns_jugador <= 0 && attack){
-                player_id = (player_id == 0)? 1 : 0;
-                this.setNumber_of_turns(this.getNumber_of_turns() + 1);
-                attack = false;
+            if(exploding != true) { 
+                if(num_turns_jugador <= 0 && !attack){
+                    player_id = (player_id == 0)? 1 : 0;
+                    this.setNumber_of_turns(1);
+                }else if(num_turns_jugador <= 0 && attack){
+                    player_id = (player_id == 0)? 1 : 0;
+                    this.setNumber_of_turns(this.getNumber_of_turns() + 1);
+                    attack = false;
+                }
             }
         }
 
@@ -128,17 +144,18 @@ public class Partida {
         ArrayList<Jugada> jugadas = new ArrayList<>();
         String opcion="";  
         Boolean end_turn = false;
-        System.out.println("-------------------------------------------------------");
-        System.out.println("Turno del jugador: " + p.getId());
-        System.out.println("Cartas en el deck: " + this.getDeck().size());
-        System.out.println("Probabilidad de bomba " + 1/this.getDeck().size());
+        //System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        //System.out.println("Turno del jugador: " + p.getId());
+        //System.out.println("Cartas en el deck: " + this.getDeck().size());
+        //System.out.println("Probabilidad de bomba " + 1/ (float) this.getDeck().size());
         Scanner leer=new Scanner(System.in);
         while(!end_turn){
+            //System.out.println("Cartas en la mano del jugador: " + p.getHand().keySet());
             Jugada j;
             if(p.isHuman()){
-                System.out.println("Escoge una carta o escribe 'R' para robar una carta ");
-                System.out.println("Cartas en mano: \n" + p.manoString());
-                System.out.println("R) Robar");
+                //System.out.println("Escoge una carta o escribe 'R' para robar una carta ");
+                //System.out.println("Cartas en mano: \n" + p.manoString());
+                //System.out.println("R) Robar");
                 opcion = leer.nextLine();
                 // comprobar que tenga la carta que dice tener en la mano o que va a robar    
                 if(Utilities.isNumeric(opcion)){ // se juega una carta
@@ -151,6 +168,7 @@ public class Partida {
                                 j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
                                 jugadas.add(j);
                                 this.usar_carta(p, c);
+                                this.used_cards.replace("ATTACK", used_cards.get("ATTACK")+1);
                                 end_turn = true;
                                 break;
     
@@ -159,6 +177,7 @@ public class Partida {
                                 j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
                                 jugadas.add(j);
                                 this.usar_carta(p, c);
+                                this.used_cards.replace("SKIP", used_cards.get("SKIP")+1);
                                 end_turn = true;
                                 break;
             
@@ -166,10 +185,11 @@ public class Partida {
                                 j = new Jugada(p.getId(), accion, this.getDeck().size(), this.getUsed_cards());
                                 jugadas.add(j);
                                 this.usar_carta(p, c);
+                                this.used_cards.replace("FAVOR", used_cards.get("FAVOR")+1);
                                 giveMeFavor(p.getId());
                                 break;
                             default:
-                                System.out.println("NO PUEDES USAR EL DEFUSE HASTA QUE NO EXPLOTES");
+                                //System.out.println("NO PUEDES USAR EL DEFUSE HASTA QUE NO EXPLOTES");
                         }
                     }
                 }else if(opcion.equalsIgnoreCase("R")){ // se coge una carta
@@ -182,7 +202,7 @@ public class Partida {
                         p.getHand().put(c.getId(),c);
                     }else{
                         //HA SALIDO UNA BOMBA
-                            System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
+                            //System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
                             Card defuse = null;
                             Boolean used_defuse = false;
                             Boolean muerte = true;
@@ -196,6 +216,7 @@ public class Partida {
                                     muerte = false;
                                     Jugada d = new Jugada(p.getId(), "DEFUSE", this.getDeck().size(), this.getUsed_cards());
                                     jugadas.add(d);
+                                    this.used_cards.replace("DEFUSE", used_cards.get("DEFUSE")+1);
                                     used_defuse = true;
                                 }
                             }
@@ -211,14 +232,16 @@ public class Partida {
                     end_turn = true;
                         
                 }else{
-                    System.out.println("ESCOGE UNA OPCION VALIDA");
+                    //System.out.println("ESCOGE UNA OPCION VALIDA");
                 }
 
             }else{
                 //SUPUESTA "INTELIGENCIA" 
-                String state = LT.getActualState(p.getHand(), deck.size(), used_cards);
-                int accion = LT.getNewActionQLearning(state);
-                
+                ////System.out.println(".........INTELIGENCIA........");
+                String state = p.LT.getActualState(p.getHand(), deck.size(), used_cards);
+                ////System.out.println("ESTADO : "+ state);
+                int accion = p.LT.getNewActionQLearning(state);
+                ////System.out.println("Q-Learning : " +accion);
                 switch(accion){
                     case 0:
                         //ROBAR
@@ -231,7 +254,7 @@ public class Partida {
                             p.getHand().put(c.getId(),c);
                         }else{
                         //HA SALIDO UNA BOMBA
-                            System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
+                            //System.out.println("HA EXPLOTADO!!!!!!!!!!!!!");
                             Card defuse = null;
                             Boolean used_defuse = false;
                             Boolean muerte = true;
@@ -245,6 +268,7 @@ public class Partida {
                                     muerte = false;
                                     Jugada d = new Jugada(p.getId(), "DEFUSE", this.getDeck().size(), this.getUsed_cards());
                                     jugadas.add(d);
+                                    this.used_cards.replace("DEFUSE", used_cards.get("DEFUSE")+1);
                                     used_defuse = true;
                                 }
                             }
@@ -264,27 +288,30 @@ public class Partida {
                         //FAVOR
                         j = new Jugada(p.getId(), "FAVOR", this.getDeck().size(), this.getUsed_cards());
                         jugadas.add(j);
-                        p.countTypes(hashCards);
+                        p.countTypes(p.getHand());
                         Card favor = p.getCard_types().get("FAVOR").get(0);
                         this.usar_carta(p, favor);
+                        this.used_cards.replace("FAVOR", used_cards.get("FAVOR")+1);
                         giveMeFavor(p.getId());
                         break;
                     case 2:
                         //SKIP
                         j = new Jugada(p.getId(), "SKIP", this.getDeck().size(), this.getUsed_cards());
                         jugadas.add(j);
-                        p.countTypes(hashCards);
+                        p.countTypes(p.getHand());
                         Card skip = p.getCard_types().get("SKIP").get(0);
                         this.usar_carta(p, skip);
+                        this.used_cards.replace("SKIP", used_cards.get("SKIP")+1);
                         end_turn = true;
                         break;
 
                     case 3:
                         j = new Jugada(p.getId(), "ATTACK", this.getDeck().size(), this.getUsed_cards());
                         jugadas.add(j);
-                        p.countTypes(hashCards);
+                        p.countTypes(p.getHand());
                         Card attack = p.getCard_types().get("ATTACK").get(0);
                         this.usar_carta(p, attack);
+                        this.used_cards.replace("ATTACK", used_cards.get("ATTACK")+1);
                         end_turn = true;                        
                         break;
                 }
@@ -317,19 +344,19 @@ public class Partida {
     // repartir cartas aleatorias 
     public void reparteCartas() {
         int num_cards = this.hashCards.size();
-        System.out.println(num_cards);
+        ////System.out.println(num_cards);
         reparteDefuse();
         for (int i = 0; i < this.hashPlayers.size(); i++) {
-            System.out.println("Numero de cartas a coger: "+num_hand_cards);
-            System.out.println("Jugador: "+this.hashPlayers.get(i).getId());
+            ////System.out.println("Numero de cartas a coger: "+num_hand_cards);
+            ////System.out.println("Jugador: "+this.hashPlayers.get(i).getId());
             
             while (this.hashPlayers.get(i).getHand().size() != num_hand_cards) {
                 int card_number = (int) (Math.random() * num_cards + 2);
-                System.out.println(card_number);
+                ////System.out.println(card_number);
                 // se cogen las cartas que no estén ocupadas ya
                 
                 if(this.hashCards.get(card_number).getEstado() == Card.Estado.LIBRE  && !this.hashCards.get(card_number).getType().equalsIgnoreCase("EXPLODING_KITTEN")){
-                    System.out.println("Carta repartida: "+this.gethashCards().get(card_number).getType());
+                    ////System.out.println("Carta repartida: "+this.gethashCards().get(card_number).getType());
                     this.hashPlayers.get(i).getHand().put(card_number, this.gethashCards().get(card_number));
                     this.hashCards.get(card_number).setEstado(Estado.REPARTIDA);
                     this.getDeck().remove(hashCards.get(card_number));
@@ -344,38 +371,19 @@ public class Partida {
         
     }
     public void usar_carta(Player p ,Card c){
+        //System.out.println("Id carta usada: " +c.getId());
+        HashMap<Integer, Card> hand_aux = new HashMap<Integer,Card>();
         // eliminar la carta de la mano del jugador y añadirla a el mazo de cartas usadas (used_cards)
-        p.getHand().remove(c.getId()); 
+        hand_aux = p.getHand();
+        hand_aux.remove(c.getId());
+        p.setHand(hand_aux); 
         int valor  = this.getUsed_cards().get(c.getType());
         this.getUsed_cards().put(c.getType(), valor ++);
         c.setEstado(Estado.USADA);
          
     }
 
-    // Mostrar los resultados una vez finalice la partida
-    public void resultados(){
-        FileWriter file = null;
-        PrintWriter pw = null;
-        String path = "../resultados/resultados" + Integer.toString(this.getId()) + ".txt";
-        try{
-            file = new FileWriter(path);
-            pw = new PrintWriter(file);
-            pw.println("############# WINNER #############");
-            pw.println("PLAYER: "+ Integer.toString(this.getWinner()));
-            pw.println("############# LIST_OF_TURNS #############");
-            for (Map.Entry<Integer, ArrayList<Jugada>> turno : this.getTurnos().entrySet()){
-                pw.println("-------- TURN_"+ turno.getKey() + " --------");
-                for(Jugada jugada : turno.getValue()){
-                    pw.println(jugada.toString());
-                }
-            } 
-
-        }catch(Exception e){
-
-        }finally{
-        
-        } 
-    }
+   
     // tras usar el defuse se añade la bomba al mazo y se baraja para que esté en una posición aleatoria
     public void baraja_bomba(){
         Collections.shuffle(this.getDeck());
@@ -475,13 +483,7 @@ public class Partida {
     public void setNumber_of_turns(int number_of_turns) {
         this.number_of_turns = number_of_turns;
     }
-    public int getId() {
-        return this.id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    
     
 
 }

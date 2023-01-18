@@ -18,7 +18,7 @@ public class Card {
         id_index ++;
         this.type = type;
         this.estado = Estado.LIBRE;
-        System.out.println(this.id + this.type);
+        //System.out.println(this.id + this.type);
     }
 
     public int getId() {
@@ -51,6 +51,14 @@ public class Card {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    public static int getId_index() {
+        return id_index;
+    }
+
+    public static void setId_index(int id_index) {
+        Card.id_index = id_index;
     }
 
 }

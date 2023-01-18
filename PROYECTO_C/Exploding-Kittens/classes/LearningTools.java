@@ -3,6 +3,7 @@ package classes;
 //imports
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.ArrayList;
 import java.io.Serializable;
 
@@ -10,7 +11,7 @@ import java.io.Serializable;
 class LearningTools {
 
   final double DecFactorLR = 0.99; // Value that will decrement the learning rate in each generation
-  final double epsilon = 0.80; // Used to avoid selecting always the best action
+  double epsilon = 0.6; // Used to avoid selecting always the best action
   final double MINLearnRate = 0.05; // We keep learning, after convergence, during 5% of times
 
   StateAction PresentStateAction; // Contains the present state we are and the actions that are available
@@ -42,6 +43,11 @@ class LearningTools {
    */
   public void updateQlearning(int Reward) {
     //Si ha ganado la partida entonces Reward será positiva y si la ha perdido Reward será negativa
+    for(int i = 0 ; i < list_StatePlayeds.size(); i ++){
+      //System.out.println(list_StatePlayeds.get(i).toString());
+    }
+    
+    
     for(int i = 0 ; i< list_StatePlayeds.size(); i++){
 
         StatePlayed state_action = list_StatePlayeds.get(i); 
@@ -52,13 +58,12 @@ class LearningTools {
         double dQmax = hash_StateActions.get(estado).getQmax();
         
           value += LearnRate * (Reward + Gamma * dQmax - value);
-        
+        hash_StateActions.get(estado).dValAction[action] = value;
 
     }
     LearnRate *= DecFactorLR; // Reducing the learning rate
     if (LearnRate < MINLearnRate)
     LearnRate = MINLearnRate;
-    
     list_StatePlayeds.clear();
   }
 
@@ -69,7 +74,7 @@ class LearningTools {
     int iBest=-1, iNumBest=1;
     int iNewAction;
     double dQmax;
-
+    Vector<Integer> indices_no_nulos = new Vector<Integer> (1,1); 
     // Searching if we already have the state at the HashMap
     if (!hash_StateActions.containsKey(state)) {
       PresentStateAction = new StateAction(state);
@@ -78,35 +83,40 @@ class LearningTools {
     } else {
       PresentStateAction = hash_StateActions.get(state);
     }
-    
+    //System.out.println("Probabilidades = ["+PresentStateAction.dValAction[0]+","+ PresentStateAction.dValAction[1]+","+ PresentStateAction.dValAction[2]+","+PresentStateAction.dValAction[3]+"]");
     dQmax = 0;
-      for (int i=0; i<PresentStateAction.dValAction.length; i++) {     // Determining the action to get Qmax{a'}
-        if (PresentStateAction.dValAction[i] > dQmax) {
-          iBest = i;
-          iNumBest = 1;       // Reseting the number of best actions
-          dQmax = PresentStateAction.dValAction[i];
-        }
-        else if ( (PresentStateAction.dValAction[i] == dQmax) && (dQmax > 0) ) { // If there is another one equal we must select one of them randomly
-          iNumBest++;
-          if (Math.random() < 1.0 / (double) iNumBest) {    // Choose randomly with reducing probabilities
-            iBest = i;
-            dQmax = PresentStateAction.dValAction[i]; 
-          }
-        }
+    for (int i=0; i<PresentStateAction.dValAction.length; i++) {     // Determining the action to get Qmax{a'}
+      if (PresentStateAction.dValAction[i] > dQmax) {
+        iBest = i;
+        iNumBest = 1;       // Reseting the number of best actions
+        dQmax = PresentStateAction.dValAction[i];
+        indices_no_nulos.addElement(i);
       }
-  
-    if ( (iBest > -1) && (Math.random() > epsilon) )    // Using the e-greedy policy to select the best action or any of the rest
+      else if ( (PresentStateAction.dValAction[i] == dQmax) && (dQmax > 0) ) { // If there is another one equal we must select one of them randomly
+        iNumBest++;
+        indices_no_nulos.addElement(i);
+        if (Math.random() < 1.0 / (double) iNumBest) {    // Choose randomly with reducing probabilities
+          iBest = i;
+          dQmax = PresentStateAction.dValAction[i]; 
+        }
+      }else if( PresentStateAction.dValAction[i] < dQmax && PresentStateAction.dValAction[i] > 0 ){
+        indices_no_nulos.addElement(i);
+      }
+    }
+    ////System.out.println("HOLA"+"iBest: " + iBest + " iNumBest" + iNumBest);
+    if ( (iBest > -1) && (Math.random() < epsilon) )    // Using the e-greedy policy to select the best action or any of the rest
       iNewAction = iBest;
-    else do {
-      iNewAction = (int) (Math.random() * (double) PresentStateAction.dValAction.length);
-    } while (iNewAction == iBest  && PresentStateAction.dValAction[iNewAction] != 0);
+    else{
+      int indice_vector = (int) Math.random()*indices_no_nulos.size();
+      iNewAction = indices_no_nulos.elementAt(indice_vector);
+    } 
   
     //Adding the state and the action played to the list of actions played   
     StatePlayed sP = new  StatePlayed(PresentStateAction.state, iNewAction);
     list_StatePlayeds.add(sP);
       
     LastStateAction = PresentStateAction; // Updating values for the next time
-      
+    ////System.out.println("Accion jugada: " + iNewAction);
     return sP.getAction_played();
   }
 
@@ -194,9 +204,9 @@ class StateAction implements Serializable {
       for(int i = 0 ; i< aux_valAction.length ; i ++){
           aux_valAction[i] = aux_valAction[i]/contador_acciones;
       } 
-
-
+      
       dValAction = aux_valAction;
+      ////System.out.println("Probabilidades: " +dValAction[0] +"," +dValAction[1]+"," +dValAction[2] +"," +dValAction[3] );
     }
   
     public String sGetState() {
@@ -220,6 +230,9 @@ class StateAction implements Serializable {
       }
   
       return dQmax;
+    }
+    public String aString (){
+      return state+": ["+dValAction[0]+","+dValAction[1]+","+dValAction[2]+","+dValAction[3]+"]";
     }
   }
   
@@ -247,5 +260,8 @@ class StateAction implements Serializable {
     public void setAction_played(int action_played) {
       this.action_played = action_played;
     }
-  
+    
+    public String toString(){
+      return state +":"+ action_played;
+    }
   }

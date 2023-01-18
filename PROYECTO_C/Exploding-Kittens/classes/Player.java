@@ -9,6 +9,7 @@ public class Player{
     private int id;
     private HashMap<Integer, Card> hand = new HashMap<Integer,Card>();
     private HashMap<String, ArrayList<Card>> card_types;
+    LearningTools LT = new LearningTools();
     /*
         Defuse: 
             c1
@@ -27,6 +28,7 @@ public class Player{
         if(this.id==0 && !onlyIA){
             this.isHuman = true;
         }
+        
         
 
     }
@@ -69,16 +71,21 @@ public class Player{
 
 
     public void countTypes(HashMap<Integer,Card> hand){
+       // System.out.println("Dentro de count types: " +hand.keySet());
         HashMap<String, ArrayList<Card>> aux = new HashMap<String, ArrayList<Card>>();
         for(Map.Entry<Integer,Card> card: hand.entrySet()){
-            if(aux.containsKey(card.getValue().getType())){
-                aux.get(card.getValue().getType()).add(card.getValue());
-            }else{
-                ArrayList<Card> cards = new ArrayList<Card>();
-                cards.add(card.getValue());
-                aux.put(card.getValue().getType(), cards);
-
-            }
+           if(aux.containsKey(card.getValue().getType())){
+             ArrayList<Card> c = aux.get(card.getValue().getType());
+             if(!c.contains(card.getValue())){
+                c.add(card.getValue());
+                aux.replace(card.getValue().getType(), c);
+             }
+           }else{
+            ArrayList<Card> c = new ArrayList<Card>();
+            c.add(card.getValue());
+            aux.put(card.getValue().getType(), c);
+            aux.get(card.getValue().getType()).add(card.getValue());
+           }
 
         }
         this.card_types = aux;
@@ -89,7 +96,7 @@ public class Player{
     public int cogeCarta(Partida p){
         ArrayList<Card> deck = p.getDeck();
         if(deck.isEmpty()){
-            System.out.println(p.getDeck());
+           // System.out.println(p.getDeck());
             Card carta = deck.get(0);
             
             if(carta.getType().equals("EXPLODING_KITTEN")){
@@ -125,6 +132,14 @@ public class Player{
 
     public HashMap<String, ArrayList<Card>> getCard_types() {
         return card_types;
+    }
+
+    public LearningTools getLT() {
+        return LT;
+    }
+
+    public void setLT(LearningTools lT) {
+        LT = lT;
     }
    
 
